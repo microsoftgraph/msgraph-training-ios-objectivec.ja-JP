@@ -16,7 +16,6 @@
 に進む前に、後で使用する追加の依存関係をインストールします。
 
 - Azure AD での認証については、 [Microsoft Authentication Library (MSAL) For iOS](https://github.com/AzureAD/microsoft-authentication-library-for-objc)を使用してください。
-- Microsoft Graph SDK を使用して MSAL を接続する[ための Msal 認証プロバイダー](https://github.com/microsoftgraph/msgraph-sdk-objc-auth) 。
 - Microsoft graph に電話をかけるための[Microsoft GRAPH SDK For 客観 C](https://github.com/microsoftgraph/msgraph-sdk-objc) 。
 - Microsoft Graph では、ユーザーやイベントなどの Microsoft Graph のリソースを表す、厳密に型指定されたオブジェクト用の[Microsoft Graph モデル SDK を目的](https://github.com/microsoftgraph/msgraph-sdk-objc-models)としています。
 
@@ -31,10 +30,9 @@
 1. Podfile を開き、行の`use_frameworks!`直後に次の行を追加します。
 
     ```Ruby
-    pod 'MSAL', '~> 0.3.0'
-    pod 'MSGraphMSALAuthProvider', '~> 0.1.1'
-    pod 'MSGraphClientSDK', ' ~> 0.1.3'
-    pod 'MSGraphClientModels', '~> 0.1.1'
+    pod 'MSAL', '~> 1.0.2'
+    pod 'MSGraphClientSDK', ' ~> 1.0.0'
+    pod 'MSGraphClientModels', '~> 1.3.0'
     ```
 
 1. Podfile を保存してから、次のコマンドを実行して依存関係をインストールします。
@@ -114,13 +112,13 @@
 
     ![Xcode の新しいタブバーコントローラーに手動 segue をドラッグするスクリーンショット](./images/add-segue.png)
 
-1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 [**識別子**] フィールドを`userSignedIn`に設定します。
+1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 **識別子** `userSignedIn`フィールドをに設定し、**プレゼンテーション**を**全画面表示**に設定します。
 
     ![Xcode の Attributes インスペクターの識別子フィールドのスクリーンショット](./images/set-segue-identifier.png)
 
 1. **アイテム1のシーン**を選択し、[**接続インスペクター**] を選択します。
 1. [**トリガー**された Segues] で、[**手動**] の横にある円を、ストーリーボードの**サインインビューコントローラー**にドラッグします。 ポップアップメニューの [**モーダル**] を選択します。
-1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 [**識別子**] フィールドを`userSignedOut`に設定します。
+1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 **識別子** `userSignedOut`フィールドをに設定し、**プレゼンテーション**を**全画面表示**に設定します。
 
 ### <a name="create-welcome-page"></a>ウェルカムページを作成する
 
