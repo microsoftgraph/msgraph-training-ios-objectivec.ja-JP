@@ -54,257 +54,34 @@
 
 1. 次の関数を `AppDelegate` クラスに追加します。
 
-    ```objc
-    - (BOOL)application:(UIApplication *)app
-                openURL:(NSURL *)url
-                options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-    {
-        return [MSALPublicClientApplication handleMSALResponse:url
-                                             sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]];
-    }
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/AppDelegate.m" id="HandleMsalResponseSnippet":::
 
 ### <a name="create-authentication-manager"></a>認証マネージャーを作成する
 
 1. 「 **Authenticationmanager**」という名前の**graphtutorial**プロジェクトに新しい**cocoa タッチクラス**を作成します。 フィールド**のサブクラス**で [ **NSObject** ] を選択します。
 1. **Authenticationmanager .h**を開き、その内容を次のコードで置き換えます。
 
-    ```objc
-    #import <Foundation/Foundation.h>
-    #import <MSAL/MSAL.h>
-    #import <MSGraphClientSDK/MSGraphClientSDK.h>
-
-    NS_ASSUME_NONNULL_BEGIN
-
-    typedef void (^GetTokenCompletionBlock)(NSString* _Nullable accessToken, NSError* _Nullable error);
-
-    @interface AuthenticationManager : NSObject<MSAuthenticationProvider>
-
-    + (id) instance;
-    - (void) getTokenInteractivelyWithParentView: (UIViewController*) parentView andCompletionBlock: (GetTokenCompletionBlock)completionBlock;
-    - (void) getTokenSilentlyWithCompletionBlock: (GetTokenCompletionBlock)completionBlock;
-    - (void) signOut;
-    - (void) getAccessTokenForProviderOptions:(id<MSAuthenticationProviderOptions>)authProviderOptions andCompletion:(void (^)(NSString *, NSError *))completion;
-
-    @end
-
-    NS_ASSUME_NONNULL_END
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/AuthenticationManager.h" id="AuthManagerSnippet":::
 
 1. **Authenticationmanager. m**を開き、その内容を次のコードで置き換えます。
 
-    ```objc
-    #import "AuthenticationManager.h"
-
-    @interface AuthenticationManager()
-
-    @property NSString* appId;
-    @property NSArray<NSString*>* graphScopes;
-    @property MSALPublicClientApplication* publicClient;
-
-    @end
-
-    @implementation AuthenticationManager
-
-    + (id) instance {
-        static AuthenticationManager *singleInstance = nil;
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^ {
-            singleInstance = [[self alloc] init];
-        });
-
-        return singleInstance;
-    }
-
-    - (id) init {
-        if (self = [super init]) {
-            // Get app ID and scopes from AuthSettings.plist
-            NSString* authConfigPath =
-            [NSBundle.mainBundle pathForResource:@"AuthSettings" ofType:@"plist"];
-            NSDictionary* authConfig = [NSDictionary dictionaryWithContentsOfFile:authConfigPath];
-
-            self.appId = authConfig[@"AppId"];
-            self.graphScopes = authConfig[@"GraphScopes"];
-
-            // Create the MSAL client
-            self.publicClient = [[MSALPublicClientApplication alloc] initWithClientId:self.appId error:nil];
-        }
-
-        return self;
-    }
-
-    - (void) getAccessTokenForProviderOptions:(id<MSAuthenticationProviderOptions>)authProviderOptions andCompletion:(void (^)(NSString * _Nonnull, NSError * _Nonnull))completion {
-        [self getTokenSilentlyWithCompletionBlock:completion];
-    }
-
-    - (void) getTokenInteractivelyWithParentView:(UIViewController *)parentView andCompletionBlock:(GetTokenCompletionBlock)completionBlock {
-        MSALWebviewParameters* webParameters = [[MSALWebviewParameters alloc] initWithParentViewController:parentView];
-        MSALInteractiveTokenParameters* interactiveParameters =
-        [[MSALInteractiveTokenParameters alloc]initWithScopes:self.graphScopes webviewParameters:webParameters];
-
-        // Call acquireToken to open a browser so the user can sign in
-        [self.publicClient
-         acquireTokenWithParameters:interactiveParameters
-         completionBlock:^(MSALResult * _Nullable result, NSError * _Nullable error) {
-
-            // Check error
-            if (error) {
-                completionBlock(nil, error);
-                return;
-            }
-
-            // Check result
-            if (!result) {
-                NSMutableDictionary* details = [NSMutableDictionary dictionary];
-                [details setValue:@"No result was returned" forKey:NSDebugDescriptionErrorKey];
-                completionBlock(nil, [NSError errorWithDomain:@"AuthenticationManager" code:0 userInfo:details]);
-                return;
-            }
-
-            NSLog(@"Got token interactively: %@", result.accessToken);
-            completionBlock(result.accessToken, nil);
-        }];
-    }
-
-    - (void) getTokenSilentlyWithCompletionBlock:(GetTokenCompletionBlock)completionBlock {
-        // Check if there is an account in the cache
-        NSError* msalError;
-        MSALAccount* account = [self.publicClient allAccounts:&msalError].firstObject;
-
-        if (msalError || !account) {
-            NSMutableDictionary* details = [NSMutableDictionary dictionary];
-            [details setValue:@"Could not retrieve account from cache" forKey:NSDebugDescriptionErrorKey];
-            completionBlock(nil, [NSError errorWithDomain:@"AuthenticationManager" code:0 userInfo:details]);
-            return;
-        }
-
-        MSALSilentTokenParameters* silentParameters = [[MSALSilentTokenParameters alloc] initWithScopes:self.graphScopes
-                                                                                                account:account];
-
-        // Attempt to get token silently
-        [self.publicClient
-         acquireTokenSilentWithParameters:silentParameters
-         completionBlock:^(MSALResult * _Nullable result, NSError * _Nullable error) {
-             // Check error
-             if (error) {
-                 completionBlock(nil, error);
-                 return;
-             }
-
-             // Check result
-             if (!result) {
-                 NSMutableDictionary* details = [NSMutableDictionary dictionary];
-                 [details setValue:@"No result was returned" forKey:NSDebugDescriptionErrorKey];
-                 completionBlock(nil, [NSError errorWithDomain:@"AuthenticationManager" code:0 userInfo:details]);
-                 return;
-             }
-
-             NSLog(@"Got token silently: %@", result.accessToken);
-             completionBlock(result.accessToken, nil);
-         }];
-    }
-
-    - (void) signOut {
-        NSError* msalError;
-        NSArray* accounts = [self.publicClient allAccounts:&msalError];
-
-        if (msalError) {
-            NSLog(@"Error getting accounts from cache: %@", msalError.debugDescription);
-            return;
-        }
-
-        for (id account in accounts) {
-            [self.publicClient removeAccount:account error:nil];
-        }
-    }
-
-    @end
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/AuthenticationManager.m" id="AuthManagerSnippet":::
 
 ### <a name="add-sign-in-and-sign-out"></a>サインインとサインアウトを追加する
 
 1. **SignInViewController**ファイルを開き、その内容を次のコードに置き換えます。
 
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/SignInViewController.m" id="SignInViewSnippet":::
+
+1. **WelcomeViewController**を開き、次`import`のステートメントをファイルの先頭に追加します。
+
     ```objc
-    #import "SignInViewController.h"
-    #import "SpinnerViewController.h"
     #import "AuthenticationManager.h"
-
-    @interface SignInViewController ()
-    @property SpinnerViewController* spinner;
-    @end
-
-    @implementation SignInViewController
-
-    - (void)viewDidLoad {
-        [super viewDidLoad];
-        // Do any additional setup after loading the view.
-
-        self.spinner = [SpinnerViewController alloc];
-        [self.spinner startWithContainer:self];
-
-        [AuthenticationManager.instance
-         getTokenSilentlyWithCompletionBlock:^(NSString * _Nullable accessToken, NSError * _Nullable error) {
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 [self.spinner stop];
-
-                 if (error || !accessToken) {
-                     // If there is no token or if there's an error,
-                     // no user is signed in, so stay here
-                     return;
-                 }
-
-                 // Since we got a token, user is signed in
-                 // Go to welcome page
-                 [self performSegueWithIdentifier: @"userSignedIn" sender: nil];
-             });
-        }];
-    }
-
-    - (IBAction)signIn {
-        self.spinner = [SpinnerViewController alloc];
-        [self.spinner startWithContainer:self];
-
-        [AuthenticationManager.instance
-         getTokenInteractivelyWithParentView:self
-         andCompletionBlock:^(NSString * _Nullable accessToken, NSError * _Nullable error) {
-             dispatch_async(dispatch_get_main_queue(), ^{
-                 [self.spinner stop];
-
-                 if (error || !accessToken) {
-                     // Show the error and stay on the sign-in page
-                     UIAlertController* alert = [UIAlertController
-                                                 alertControllerWithTitle:@"Error signing in"
-                                                 message:error.debugDescription
-                                                 preferredStyle:UIAlertControllerStyleAlert];
-
-                     UIAlertAction* okButton = [UIAlertAction
-                                                actionWithTitle:@"OK"
-                                                style:UIAlertActionStyleDefault
-                                                handler:nil];
-
-                     [alert addAction:okButton];
-                     [self presentViewController:alert animated:true completion:nil];
-                     return;
-                 }
-
-                 // Since we got a token, user is signed in
-                 // Go to welcome page
-                 [self performSegueWithIdentifier: @"userSignedIn" sender: nil];
-             });
-         }];
-    }
-    @end
     ```
 
-1. **WelcomeViewController**を開き、既存`signOut`の関数を次のように置き換えます。
+1. 既存の `signOut` 関数を、以下の関数で置き換えます。
 
-    ```objc
-    - (IBAction)signOut {
-        [AuthenticationManager.instance signOut];
-        [self performSegueWithIdentifier: @"userSignedOut" sender: nil];
-    }
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/WelcomeViewController.m" id="SignOutSnippet":::
 
 1. 変更を保存し、シミュレータでアプリケーションを再起動します。
 
@@ -312,7 +89,7 @@
 
 ![Xcode でアクセストークンが表示されている出力ウィンドウのスクリーンショット](./images/access-token-output.png)
 
-## <a name="get-user-details"></a>ユーザーの詳細を取得する
+## <a name="get-user-details"></a>ユーザーの詳細情報を取得する
 
 このセクションでは、Microsoft Graph へのすべての呼び出しを保持するヘルパークラスを作成し、 `WelcomeViewController`を更新して、この新しいクラスを使用してログインしているユーザーを取得します。
 
@@ -323,6 +100,7 @@
     #import <Foundation/Foundation.h>
     #import <MSGraphClientSDK/MSGraphClientSDK.h>
     #import <MSGraphClientModels/MSGraphClientModels.h>
+    #import <MSGraphClientModels/MSCollection.h>
     #import "AuthenticationManager.h"
 
     NS_ASSUME_NONNULL_BEGIN
@@ -422,49 +200,6 @@
 
 1. 既存`viewDidLoad`のを次のコードに置き換えます。
 
-    ```objc
-    - (void)viewDidLoad {
-        [super viewDidLoad];
-        // Do any additional setup after loading the view.
-
-        self.spinner = [SpinnerViewController alloc];
-        [self.spinner startWithContainer:self];
-
-        self.userProfilePhoto.image = [UIImage imageNamed:@"DefaultUserPhoto"];
-
-        [GraphManager.instance
-         getMeWithCompletionBlock:^(MSGraphUser * _Nullable user, NSError * _Nullable error) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self.spinner stop];
-
-                if (error) {
-                    // Show the error
-                    UIAlertController* alert = [UIAlertController
-                                                alertControllerWithTitle:@"Error getting user profile"
-                                                message:error.debugDescription
-                                                preferredStyle:UIAlertControllerStyleAlert];
-
-                    UIAlertAction* okButton = [UIAlertAction
-                                               actionWithTitle:@"OK"
-                                               style:UIAlertActionStyleDefault
-                                               handler:nil];
-
-                    [alert addAction:okButton];
-                    [self presentViewController:alert animated:true completion:nil];
-                    return;
-                }
-
-                // Set display name
-                self.userDisplayName.text = user.displayName ? : @"Mysterious Stranger";
-                [self.userDisplayName sizeToFit];
-
-                // AAD users have email in the mail attribute
-                // Personal accounts have email in the userPrincipalName attribute
-                self.userEmail.text = user.mail ? : user.userPrincipalName;
-                [self.userEmail sizeToFit];
-            });
-         }];
-    }
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/WelcomeViewController.m" id="ViewDidLoadSnippet":::
 
 変更を保存して今すぐアプリを再起動すると、サインイン後にユーザーの表示名と電子メールアドレスで UI が更新されます。

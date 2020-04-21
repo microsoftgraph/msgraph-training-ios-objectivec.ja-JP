@@ -30,7 +30,7 @@
 1. Podfile を開き、行の`use_frameworks!`直後に次の行を追加します。
 
     ```Ruby
-    pod 'MSAL', '~> 1.0.2'
+    pod 'MSAL', '~> 1.1.1'
     pod 'MSGraphClientSDK', ' ~> 1.0.0'
     pod 'MSGraphClientModels', '~> 1.3.0'
     ```
@@ -93,16 +93,18 @@
 
     ![Xcode のライブラリのスクリーンショット](./images/add-button-to-view.png)
 
-1. ボタンを選択した状態で、[ **Attributes Inspector** ] **** を選択し、ボタン`Sign In`のタイトルをに変更します。
+1. ボタンを選択した状態で、[ **Attributes Inspector** ] **Title**を選択し、ボタン`Sign In`のタイトルをに変更します。
 
     ![Xcode の Attributes インスペクターのタイトルフィールドのスクリーンショット](./images/set-button-title.png)
+
+1. ボタンを選択した状態で、ストーリーボードの下部にある [**配置**] ボタンを選択します。 コンテナーの制約で**水平方向コンテナー**と**垂直方向**の両方を選択し、その値を0のままにして、[ **2 つの制約を追加**する] を選択します。
+
+    ![Xcode の配置制限の設定のスクリーンショット](./images/add-alignment-constraints.png)
 
 1. **サインインビューコントローラー**を選択し、[**接続インスペクター**] を選択します。
 1. [**受信した処理**] で、[**サインイン**] の隣にある円をボタンにドラッグします。 ポップアップメニューで [ **Touch Up** ] を選択します。
 
     ![Xcode のボタンにサインイン操作をドラッグした場合のスクリーンショット](./images/connect-sign-in-button.png)
-
-1. [**エディター** ] メニューの [**自動レイアウトの問題を解決**する] を選択し、[すべてのビューの下**にある**[不足している**制約の追加**] を選択します。
 
 ### <a name="create-tab-bar"></a>タブバーを作成する
 
@@ -175,18 +177,45 @@
     - 2つの**ラベル**
     - 1つの**ボタン**
 
-1. イメージビューを選択し、**サイズインスペクター**を選択します。
-1. **幅**と**高さ**を196に設定します。
-1. 2番目のラベルを選択し、[ **Attributes インスペクター**] を選択します。
-1. **色**を**濃い灰色の色**に変更し、**フォント**を**システム 12.0**に変更します。
-1. ボタンを選択し、[ **Attributes Inspector**] を選択します。
-1. **タイトル**をに`Sign Out`変更します。
 1. [**接続インスペクター**] を使用して、次の接続を行います。
 
     - **Userdisplayname**アウトレットを最初のラベルにリンクします。
     - **Useremail**アウトレットを2番目のラベルにリンクします。
     - **UserProfilePhoto**アウトレットをイメージビューにリンクします。
     - **SignOut** received アクションをボタンの**タッチアップ**にリンクします。
+
+1. イメージビューを選択し、**サイズインスペクター**を選択します。
+1. **幅**と**高さ**を196に設定します。
+1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
+1. [**新しい制約の追加**] ボタン ([**配置**] ボタンの横) を使用して、以下の制約を追加します。
+
+    - 上揃え: セーフエリア、値: 0
+    - 下スペース: ユーザーの表示名、値: 標準
+    - 高さ、値: 196
+    - 幅、値: 196
+
+    ![Xcode の新しい制約設定のスクリーンショット](./images/add-new-constraints.png)
+
+1. 最初のラベルを選択してから、[**配置**] ボタンを使用して、値が0の**コンテナー内の水平方向**の制約を追加します。
+1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+
+    - [最大サイズ]: ユーザープロファイル写真、値: 標準
+    - 下スペース: ユーザーの電子メール、値: 標準
+
+1. 2番目のラベルを選択し、[ **Attributes インスペクター**] を選択します。
+1. **色**を**濃い灰色の色**に変更し、**フォント**を**システム 12.0**に変更します。
+1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
+1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+
+    - 先頭のスペース: ユーザーの表示名、値: 標準
+    - 下にスペースを挿入: サインアウト、値:14
+
+1. ボタンを選択し、[ **Attributes Inspector**] を選択します。
+1. **タイトル**をに`Sign Out`変更します。
+1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
+1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+
+    - [最大サイズ]: ユーザーの電子メール、値:14
 
 1. シーンの下部にあるタブバー項目を選択し、[ **Attributes Inspector**] を選択します。 **タイトル**をに`Me`変更します。
 1. [**エディター** ] メニューの [**自動レイアウトの問題を解決**する] を選択し、[**ウェルカムビューコントローラーのすべてのビューの**下にある [不足している制約を**追加**する] を選択します。
@@ -231,7 +260,7 @@
 1. **ライブラリ**を使用して、**アイテム2のシーン**に**テキストビュー**を追加します。
 1. 追加したテキストビューを選択します。 **エディター**で、[**埋め込み**] を選択してから、[ビュー] を**スクロール**します。
 1. [**接続インスペクター**] を使用して、 **calendarjson**アウトレットをテキストビューに接続します。
-1. 1. シーンの下部にあるタブバー項目を選択し、[ **Attributes Inspector**] を選択します。 **タイトル**をに`Calendar`変更します。
+1. シーンの下部にあるタブバー項目を選択し、[ **Attributes Inspector**] を選択します。 **タイトル**をに`Calendar`変更します。
 1. [**エディター** ] メニューの [**自動レイアウトの問題を解決**する] を選択し、[**ウェルカムビューコントローラーのすべてのビューの**下にある [不足している制約を**追加**する] を選択します。
 
 完了すると、予定表のシーンは次のようになります。
@@ -250,46 +279,7 @@
 
 1. **Spinnerviewcontroller**を開き、その内容を次のコードで置き換えます。
 
-    ```objc
-    #import "SpinnerViewController.h"
-
-    @interface SpinnerViewController ()
-    @property (nonatomic) UIActivityIndicatorView* spinner;
-    @end
-
-    @implementation SpinnerViewController
-
-    - (void)viewDidLoad {
-        [super viewDidLoad];
-
-        _spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:
-                    UIActivityIndicatorViewStyleWhiteLarge];
-
-        self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:0.7];
-        [self.view addSubview:_spinner];
-
-        _spinner.translatesAutoresizingMaskIntoConstraints = false;
-        [_spinner startAnimating];
-
-        [_spinner.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor].active = true;
-        [_spinner.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor].active = true;
-    }
-
-    - (void) startWithContainer:(UIViewController *)container {
-        [container addChildViewController:self];
-        self.view.frame = container.view.frame;
-        [container.view addSubview:self.view];
-        [self didMoveToParentViewController:container];
-    }
-
-    - (void) stop {
-        [self willMoveToParentViewController:nil];
-        [self.view removeFromSuperview];
-        [self removeFromParentViewController];
-    }
-
-    @end
-    ```
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/SpinnerViewController.m" id="SpinnerViewSnippet":::
 
 ## <a name="test-the-app"></a>アプリのテスト
 

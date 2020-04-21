@@ -8,11 +8,11 @@
 
 - [iOS の目標-C Microsoft Graph のチュートリアル](https://docs.microsoft.com/graph/tutorials/ios-objectivec)
 
-## <a name="demos"></a>デモ
+## <a name="completed-sample"></a>完成したサンプル
 
-- [01-アプリ](demos/01-create-app): [iOS の作成-C アプリを作成](https://docs.microsoft.com/graph/tutorials/ios-objectivec?tutorial-step=1)します。
-- [02-aad](demos/02-add-aad-auth)-認証: 完了した[Azure AD 認証の追加](https://docs.microsoft.com/graph/tutorials/ios-objectivec?tutorial-step=3)
-- [03-msgraph](demos/03-add-msgraph): 完了[予定表データの取得](https://docs.microsoft.com/graph/tutorials/ios-objectivec?tutorial-step=4)
+このラボをフォローすることで完成したサンプルを生成する場合は、ここで見つけることができます。
+
+- [完了したプロジェクト](demo)
 
 ## <a name="watch-the-module"></a>モジュールを見る
 
@@ -29,6 +29,7 @@
 
 | バージョン |        日付        |                                                               コメント                                                               |
 | ------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.9     | 2020 年 4 月 7 日      | 最新の Xcode、MSAL などの更新されたチュートリアル                                                                                     |
 | 1.8     | 2019 年 8 月 23 日    | オンボードを docs.microsoft.com に変更したトレーニング                                                                                |
 | 1.7     | 2019年6月18日      | 更新された readme を screencast レコーディングに更新しました                                                                                     |
 | 1.6     | 2019年5月12時       | 2019Q4 コンテンツの更新                                                                                                               |
