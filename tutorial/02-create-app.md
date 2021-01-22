@@ -1,60 +1,60 @@
 <!-- markdownlint-disable MD002 MD041 -->
 
-最初に、新しい Swift プロジェクトを作成します。
+まず、新しい Objective-C プロジェクトを作成します。
 
-1. Xcode を開きます。 [**ファイル**] メニューの [**新規作成**]、[**プロジェクト**] の順に選択します。
-1. [**単一ビューアプリ**] テンプレートを選択し、[**次へ**] を選択します。
+1. Xcode を開きます。 [ファイル] **メニューで** 、[新規]、次に [ **プロジェクト]** の順に **選択します**。
+1. アプリ テンプレートを **選択し** 、[次へ] を **選択します**。
 
-    ![Xcode テンプレートの選択ダイアログのスクリーンショット](./images/xcode-select-template.png)
+    ![Xcode テンプレート選択ダイアログのスクリーンショット](./images/xcode-select-template.png)
 
-1. **製品名** `GraphTutorial`と**言語**を**目的-C**に設定します。
-1. 残りのフィールドに入力し、[**次へ**] を選択します。
-1. プロジェクトの場所を選択して、[**作成**] を選択します。
+1. 製品名 **の設定と** `GraphTutorial` 言語 **を** **Objective-C に設定します**。
+1. 残りのフィールドに入力し、[次へ] を **選択します**。
+1. プロジェクトの場所を選択し、[作成] を選択 **します**。
 
-## <a name="install-dependencies"></a>依存関係のインストール
+## <a name="install-dependencies"></a>依存関係をインストールする
 
-に進む前に、後で使用する追加の依存関係をインストールします。
+次に進む前に、後で使用する追加の依存関係をインストールします。
 
-- Azure AD での認証については、 [Microsoft Authentication Library (MSAL) For iOS](https://github.com/AzureAD/microsoft-authentication-library-for-objc)を使用してください。
-- Microsoft graph に電話をかけるための[Microsoft GRAPH SDK For 客観 C](https://github.com/microsoftgraph/msgraph-sdk-objc) 。
-- Microsoft Graph では、ユーザーやイベントなどの Microsoft Graph のリソースを表す、厳密に型指定されたオブジェクト用の[Microsoft Graph モデル SDK を目的](https://github.com/microsoftgraph/msgraph-sdk-objc-models)としています。
+- Azure AD で認証を行う iOS 用[Microsoft Authentication Library (MSAL)。](https://github.com/AzureAD/microsoft-authentication-library-for-objc)
+- [Microsoft Graph への呼び出し](https://github.com/microsoftgraph/msgraph-sdk-objc) を行う目的 C 用 Microsoft Graph SDK。
+- [ユーザーやイベントなどの Microsoft Graph リソース](https://github.com/microsoftgraph/msgraph-sdk-objc-models) を表す、強力に型指定されたオブジェクト用の Microsoft Graph Models SDK for Objective C。
 
 1. Xcode を終了します。
-1. ターミナルを開き、グラフのディレクトリを**Graphtutorial**プロジェクトの場所に変更します。
+1. ターミナルを開き、ディレクトリを **GraphTu読み込みプロジェクトの場所に変更** します。
 1. Podfile を作成するには、次のコマンドを実行します。
 
     ```Shell
     pod init
     ```
 
-1. Podfile を開き、行の`use_frameworks!`直後に次の行を追加します。
+1. Podfile を開き、行の直後に次の行を追加 `use_frameworks!` します。
 
     ```Ruby
-    pod 'MSAL', '~> 1.1.1'
+    pod 'MSAL', '~> 1.1.13'
     pod 'MSGraphClientSDK', ' ~> 1.0.0'
     pod 'MSGraphClientModels', '~> 1.3.0'
     ```
 
-1. Podfile を保存してから、次のコマンドを実行して依存関係をインストールします。
+1. Podfile を保存し、次のコマンドを実行して依存関係をインストールします。
 
     ```Shell
     pod install
     ```
 
-1. コマンドが完了したら、Xcode で新しく作成した**graphtutorial**を開きます。
+1. コマンドが完了したら、Xcode で新しく作成した **GraphTutorial.xcworkspace を** 開きます。
 
 ## <a name="design-the-app"></a>アプリを設計する
 
-このセクションでは、アプリのビュー (サインインページ、タブバーナビゲーター、ウェルカムページ、予定表ページ) を作成します。 また、アクティビティインジケーターオーバーレイも作成します。
+このセクションでは、サインイン ページ、タブ バー ナビゲーター、ウェルカム ページ、カレンダー ページなど、アプリのビューを作成します。 アクティビティ インジケーター オーバーレイも作成します。
 
-### <a name="create-sign-in-page"></a>サインインページの作成
+### <a name="create-sign-in-page"></a>サインイン ページを作成する
 
-1. Xcode の**Graphtutorial**フォルダーを展開し、 **viewcontroller**ファイルを選択します。
-1. **ファイルインスペクター**で、ファイルの**名前**をに`SignInViewController.m`変更します。
+1. Xcode で **GraphTu graphl フォルダー** を展開し **、ViewController.m ファイルを選択** します。
+1. ファイル検査 **で、** ファイル **の名前** を次に変更します `SignInViewController.m` 。
 
     ![ファイル検査のスクリーンショット](./images/rename-file.png)
 
-1. **SignInViewController**を開き、その内容を次のコードで置き換えます。
+1. **SignInViewController.m を** 開き、その内容を次のコードに置き換えます。
 
     ```objc
     #import "SignInViewController.h"
@@ -76,63 +76,63 @@
     @end
     ```
 
-1. **Viewcontroller .h**ファイルを選択します。
-1. **ファイルインスペクター**で、ファイルの**名前**をに`SignInViewController.h`変更します。
-1. **SignInViewController**を開き、のすべての`ViewController`インスタンスをに`SignInViewController`変更します。
+1. **ViewController.h ファイルを選択** します。
+1. ファイル検査 **で、** ファイル **の名前** を次に変更します `SignInViewController.h` 。
+1. **SignInViewController.h を** 開き、すべてのインスタンスを次に変更 `ViewController` します `SignInViewController` 。
 
-1. メインの**ストーリーボード**ファイルを開きます。
-1. [**ビューコントローラーシーン**] を展開し、[**ビューコントローラー**] を選択します。
+1. **Main.storyboard ファイルを開** きます。
+1. [ **コントローラー シーンの表示] を展開** し、[コントローラーの表示 **] を選択します**。
 
-    ![ビューコントローラーが選択されている Xcode のスクリーンショット](./images/storyboard-select-view-controller.png)
+    ![ビュー コントローラーが選択されている Xcode のスクリーンショット](./images/storyboard-select-view-controller.png)
 
-1. [ **Identity Inspector**] を選択してから、**クラス**のドロップダウンを**SignInViewController**に変更します。
+1. Identity Inspector **を選択し****、Class** ドロップダウンを **SignInViewController に変更します**。
 
-    ![Id インスペクターのスクリーンショット](./images/change-class.png)
+    ![ID インスペクターのスクリーンショット](./images/change-class.png)
 
-1. **ライブラリ**を選択し、**ボタン**を [サインイン]**ビューコントローラー**にドラッグします。
+1. ライブラリを **選択し**、ボタンを **サインイン** ビュー **コントローラーにドラッグします**。
 
     ![Xcode のライブラリのスクリーンショット](./images/add-button-to-view.png)
 
-1. ボタンを選択した状態で、[ **Attributes Inspector** ] **Title**を選択し、ボタン`Sign In`のタイトルをに変更します。
+1. ボタンを選択した後、属性インスペクタ **ーを** 選択し、ボタン **のタイトル** を次に変更します `Sign In` 。
 
-    ![Xcode の Attributes インスペクターのタイトルフィールドのスクリーンショット](./images/set-button-title.png)
+    ![Xcode の属性インスペクターの Title フィールドのスクリーンショット](./images/set-button-title.png)
 
-1. ボタンを選択した状態で、ストーリーボードの下部にある [**配置**] ボタンを選択します。 コンテナーの制約で**水平方向コンテナー**と**垂直方向**の両方を選択し、その値を0のままにして、[ **2 つの制約を追加**する] を選択します。
+1. ボタンを選択した後、ストーリーボードの下部にある [ **配置** ] ボタンを選択します。 コンテナー内の **水平方向** と垂直方向の両方のコンテナー制約を選択し、その値を 0 のままにして、[2 の制約の追加 **] を選択します**。
 
-    ![Xcode の配置制限の設定のスクリーンショット](./images/add-alignment-constraints.png)
+    ![Xcode の配置制約設定のスクリーンショット](./images/add-alignment-constraints.png)
 
-1. **サインインビューコントローラー**を選択し、[**接続インスペクター**] を選択します。
-1. [**受信した処理**] で、[**サインイン**] の隣にある円をボタンにドラッグします。 ポップアップメニューで [ **Touch Up** ] を選択します。
+1. サインイン ビュー **コントローラーを選択し、[** 接続インスペクター] **を選択します**。
+1. [ **受信した操作]** の下で、入力されていない円をドラッグして **、[サインイン] ボタン** に移動します。 ポップアップ **メニューの [内側に** タッチ] を選択します。
 
-    ![Xcode のボタンにサインイン操作をドラッグした場合のスクリーンショット](./images/connect-sign-in-button.png)
+    ![Xcode のボタンに SignIn アクションをドラッグするスクリーンショット](./images/connect-sign-in-button.png)
 
-### <a name="create-tab-bar"></a>タブバーを作成する
+### <a name="create-tab-bar"></a>タブ バーを作成する
 
-1. **ライブラリ**を選択し、**タブバーコントローラー**をストーリーボードにドラッグします。
-1. **サインインビューコントローラー**を選択し、[**接続インスペクター**] を選択します。
-1. [**トリガー**された Segues] で、[**手動**] の横にある円を、ストーリーボードの**タブバーコントローラー**にドラッグします。 ポップアップメニューの [**モーダル**] を選択します。
+1. ライブラリを **選択し**、タブ バー **コントローラーをストーリー** ボードにドラッグします。
+1. サインイン ビュー **コントローラーを選択し、[** 接続インスペクター] **を選択します**。
+1. **Triggered Segues の下** で、手動の横にある未入力の円をストーリーボードの **タブ バー** コントローラーにドラッグします。 ポップアップ **メニューで [モーダルに** 表示] を選択します。
 
-    ![Xcode の新しいタブバーコントローラーに手動 segue をドラッグするスクリーンショット](./images/add-segue.png)
+    ![Xcode の新しいタブ バー コントローラーに手動セグをドラッグするスクリーンショット](./images/add-segue.png)
 
-1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 **識別子** `userSignedIn`フィールドをに設定し、**プレゼンテーション**を**全画面表示**に設定します。
+1. 追加したセグを選択し、属性インスペクターを **選択します**。 [識別子]**フィールドを** 設定 `userSignedIn` し、[プレゼンテーション] を [**全画面****] に設定します**。
 
-    ![Xcode の Attributes インスペクターの識別子フィールドのスクリーンショット](./images/set-segue-identifier.png)
+    ![Xcode の属性インスペクターの Identifier フィールドのスクリーンショット](./images/set-segue-identifier.png)
 
-1. **アイテム1のシーン**を選択し、[**接続インスペクター**] を選択します。
-1. [**トリガー**された Segues] で、[**手動**] の横にある円を、ストーリーボードの**サインインビューコントローラー**にドラッグします。 ポップアップメニューの [**モーダル**] を選択します。
-1. 追加した segue を選択し、[ **Attributes Inspector**] を選択します。 **識別子** `userSignedOut`フィールドをに設定し、**プレゼンテーション**を**全画面表示**に設定します。
+1. 項目 **1 シーンを選択し**、[接続インスペクター] **を選択します**。
+1. **Triggered Segues の下** で、手動の横にある入力されていない円をストーリーボードの **サインイン ビュー** コントローラーにドラッグします。 ポップアップ **メニューで [モーダルに** 表示] を選択します。
+1. 追加したセグを選択し、属性インスペクターを **選択します**。 [識別子]**フィールドを** 設定 `userSignedOut` し、[プレゼンテーション] を [**全画面****] に設定します**。
 
-### <a name="create-welcome-page"></a>ウェルカムページを作成する
+### <a name="create-welcome-page"></a>ウェルカム ページを作成する
 
-1. [ **Assets] セット**ファイルを選択します。
-1. [**エディター** ] メニューの [**アセットの追加**] を選択し、[**新しいイメージセット**] を選択します。
-1. 新しい**画像**アセットを選択し、**属性インスペクター**を使用してその**名前**をに`DefaultUserPhoto`設定します。
-1. 既定のユーザープロファイル写真として機能する任意のイメージを追加します。
+1. **Assets.xcassets ファイルを選択** します。
+1. [エディター **] メニューで** 、[新しいアセットの **追加] を** 選択し、[イメージ セット] **を選択します**。
+1. 新しい **画像アセットを選択** し、 **属性インスペクターを使** って名前を **設定** します `DefaultUserPhoto` 。
+1. 既定のユーザー プロファイル写真として使用する画像を追加します。
 
-    ![Xcode のイメージセットアセットビューのスクリーンショット](./images/add-default-user-photo.png)
+    ![Xcode のイメージ セット アセット ビューのスクリーンショット](./images/add-default-user-photo.png)
 
-1. という名前`WelcomeViewController`の**graphtutorial**フォルダーに、新しい**cocoa タッチクラス**ファイルを作成します。 Field**のサブクラス**で [ **uiviewcontroller** ] を選択します。
-1. **WelcomeViewController**を開き、次のコードを宣言内に`@interface`追加します。
+1. **GraphTu touchl** **フォルダーに新** しい Cocoa Touch Class ファイルを作成します `WelcomeViewController` 。 フィールド **のサブクラスで UIViewController** **を選択** します。
+1. **WelcomeViewController.h を** 開き、宣言内に次のコードを追加 `@interface` します。
 
     ```objc
     @property (nonatomic) IBOutlet UIImageView *userProfilePhoto;
@@ -140,7 +140,7 @@
     @property (nonatomic) IBOutlet UILabel *userEmail;
     ```
 
-1. **WelcomeViewController**を開き、その内容を次のコードで置き換えます。
+1. **WelcomeViewController.m を** 開き、その内容を次のコードに置き換えます。
 
     ```objc
     #import "WelcomeViewController.h"
@@ -170,70 +170,70 @@
     @end
     ```
 
-1. **メインのストーリーボード**を開きます。 **アイテム1のシーン**を選択し、[ **id インスペクター**] を選択します。 **クラス**値を**WelcomeViewController**に変更します。
-1. **ライブラリ**を使用して、次のアイテムを**アイテム1のシーン**に追加します。
+1. **Main.storyboard を開きます**。 アイテム **1 シーンを選択し**、ID インスペクター **を選択します**。 クラスの **値を** **WelcomeViewController に変更します**。
+1. ライブラリを **使用して**、アイテム 1 シーンに **次の項目を追加します**。
 
-    - 1つの**イメージビュー**
-    - 2つの**ラベル**
-    - 1つの**ボタン**
+    - 1 **つのイメージ ビュー**
+    - 2 **つのラベル**
+    - 1 **つのボタン**
 
-1. [**接続インスペクター**] を使用して、次の接続を行います。
+1. Connections **Inspector を使用して、** 次の接続を行います。
 
-    - **Userdisplayname**アウトレットを最初のラベルにリンクします。
-    - **Useremail**アウトレットを2番目のラベルにリンクします。
-    - **UserProfilePhoto**アウトレットをイメージビューにリンクします。
-    - **SignOut** received アクションをボタンの**タッチアップ**にリンクします。
+    - **userDisplayName の出口を** 最初のラベルにリンクします。
+    - **userEmail の出口を** 2 番目のラベルにリンクします。
+    - **userProfilePhoto の出口を** イメージ ビューにリンクします。
+    - signOut **受信アクションを** ボタンの Touch **Up Inside にリンクします**。
 
-1. イメージビューを選択し、**サイズインスペクター**を選択します。
-1. **幅**と**高さ**を196に設定します。
-1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
-1. [**新しい制約の追加**] ボタン ([**配置**] ボタンの横) を使用して、以下の制約を追加します。
+1. イメージ ビューを選択し、サイズ検査を **選択します**。
+1. 幅と **高** さを 196 に設定します。
+1. [配置 **] ボタン** を使用して、 **コンテナー内で水平方向に** 制約を追加し、値を 0 に設定します。
+1. [新しい **制約の追加]** ボタン([整列] ボタンの横) を使用して、次の制約を追加します。
 
-    - 上揃え: セーフエリア、値: 0
-    - 下スペース: ユーザーの表示名、値: 標準
+    - 上揃え: セーフ エリア、値: 0
+    - [下のスペース]: ユーザー表示名、値: Standard
     - 高さ、値: 196
     - 幅、値: 196
 
     ![Xcode の新しい制約設定のスクリーンショット](./images/add-new-constraints.png)
 
-1. 最初のラベルを選択してから、[**配置**] ボタンを使用して、値が0の**コンテナー内の水平方向**の制約を追加します。
-1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+1. 1 つ目のラベルを選択し、[配置] ボタンを使用して、コンテナー内の水平方向 **の** 制約を値 0 で追加します。
+1. [新しい **制約の追加] ボタンを使用** して、次の制約を追加します。
 
-    - [最大サイズ]: ユーザープロファイル写真、値: 標準
-    - 下スペース: ユーザーの電子メール、値: 標準
+    - Top Space to: User Profile Photo, value: Standard
+    - [Bottom Space to]: User Email, value: Standard
 
-1. 2番目のラベルを選択し、[ **Attributes インスペクター**] を選択します。
-1. **色**を**濃い灰色の色**に変更し、**フォント**を**システム 12.0**に変更します。
-1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
-1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+1. 2 番目のラベルを選択し、属性インスペクター **を選択します**。
+1. 色を **濃い** 灰色 **に変更** し、 **フォント** をシステム **12.0 に変更します**。
+1. [配置 **] ボタン** を使用して、 **コンテナー内で水平方向に** 制約を追加し、値を 0 に設定します。
+1. [新しい **制約の追加] ボタンを使用** して、次の制約を追加します。
 
-    - 先頭のスペース: ユーザーの表示名、値: 標準
-    - 下にスペースを挿入: サインアウト、値:14
+    - [Top Space to]: User Display Name,value: Standard
+    - 下のスペース: サインアウト、値: 14
 
-1. ボタンを選択し、[ **Attributes Inspector**] を選択します。
-1. **タイトル**をに`Sign Out`変更します。
-1. [**配置**] ボタンを使用して、**コンテナー内の水平方向**の制限値を0に追加します。
-1. [**新しい制約の追加**] ボタンを使用して、以下の制約を追加します。
+1. ボタンを選択し、属性インスペクタ **ーを選択します**。
+1. Title を **次に変更** します `Sign Out` 。
+1. [配置 **] ボタン** を使用して、 **コンテナー内で水平方向に** 制約を追加し、値を 0 に設定します。
+1. [新しい **制約の追加] ボタンを使用** して、次の制約を追加します。
 
-    - [最大サイズ]: ユーザーの電子メール、値:14
+    - Top Space to: User Email, value: 14
 
-1. シーンの下部にあるタブバー項目を選択し、[ **Attributes Inspector**] を選択します。 **タイトル**をに`Me`変更します。
-1. [**エディター** ] メニューの [**自動レイアウトの問題を解決**する] を選択し、[**ウェルカムビューコントローラーのすべてのビューの**下にある [不足している制約を**追加**する] を選択します。
+1. シーンの下部にあるタブ バー項目を選択し、[属性インスペクター] を **選択します**。 Title を **次に変更** します `Me` 。
+1. [エディター **] メニューの**[自動レイアウトの問題 **の** 解決] を選択し、ウェルカム ビュー コントローラーの [すべてのビュー] の下にある [不足している制約の追加 **] を選択します**。
 
-完了したら、開始シーンは次のようになります。
+完了すると、ようこそシーンは次のように表示されます。
 
-![開始シーンレイアウトのスクリーンショット](./images/welcome-scene-layout.png)
+![ようこそシーンのレイアウトのスクリーンショット](./images/welcome-scene-layout.png)
 
 ### <a name="create-calendar-page"></a>予定表ページを作成する
 
-1. という名前`CalendarViewController`の**graphtutorial**フォルダーに、新しい**cocoa タッチクラス**ファイルを作成します。 Field**のサブクラス**で [ **uiviewcontroller** ] を選択します。
-1. **Calendarviewcontroller**を開き、宣言内に`@interface`次のコードを追加します。
+1. **GraphTu touchl** **フォルダーに新** しい Cocoa Touch Class ファイルを作成します `CalendarViewController` 。 フィールド **のサブクラスで UIViewController** **を選択** します。
+1. **CalendarViewController.h を** 開き、宣言内に次のコードを追加 `@interface` します。
 
     ```objc
     @property (nonatomic) IBOutlet UITextView *calendarJSON;
     ```
 
-1. **Calendarviewcontroller**を開き、その内容を次のコードで置き換えます。
+1. **CalendarViewController.m を** 開き、内容を次のコードに置き換えます。
 
     ```objc
     #import "CalendarViewController.h"
@@ -256,33 +256,33 @@
     @end
     ```
 
-1. **メインのストーリーボード**を開きます。 **アイテム2のシーン**を選択し、[ **id インスペクター**] を選択します。 **クラス**値を**calendarviewcontroller**に変更します。
-1. **ライブラリ**を使用して、**アイテム2のシーン**に**テキストビュー**を追加します。
-1. 追加したテキストビューを選択します。 **エディター**で、[**埋め込み**] を選択してから、[ビュー] を**スクロール**します。
-1. [**接続インスペクター**] を使用して、 **calendarjson**アウトレットをテキストビューに接続します。
-1. シーンの下部にあるタブバー項目を選択し、[ **Attributes Inspector**] を選択します。 **タイトル**をに`Calendar`変更します。
-1. [**エディター** ] メニューの [**自動レイアウトの問題を解決**する] を選択し、[**ウェルカムビューコントローラーのすべてのビューの**下にある [不足している制約を**追加**する] を選択します。
+1. **Main.storyboard を開きます**。 アイテム **2 シーンを選択し**、ID インスペクター **を選択します**。 クラスの **値を** **CalendarViewController に変更します**。
+1. ライブラリを **使用して**、アイテム 2 **シーンに****テキスト ビューを追加します**。
+1. 追加したテキスト ビューを選択します。 エディターで **、[埋め** 込み **]、次** に [スクロール ビュー] **の順に選択します**。
+1. Connections **Inspector を使用して****、calendarJSON** の出口をテキスト ビューに接続します。
+1. シーンの下部にあるタブ バー項目を選択し、[属性インスペクター] を **選択します**。 Title を **次に変更** します `Calendar` 。
+1. [エディター **] メニューの**[自動レイアウトの問題 **の** 解決] を選択し、ウェルカム ビュー コントローラーの [すべてのビュー] の下にある [不足している制約の追加 **] を選択します**。
 
-完了すると、予定表のシーンは次のようになります。
+完了すると、予定表シーンは次のように表示されます。
 
-![予定表のシーンレイアウトのスクリーンショット](./images/calendar-scene-layout.png)
+![カレンダー シーン レイアウトのスクリーンショット](./images/calendar-scene-layout.png)
 
-### <a name="create-activity-indicator"></a>アクティビティインジケーターの作成
+### <a name="create-activity-indicator"></a>アクティビティ インジケーターを作成する
 
-1. という名前`SpinnerViewController`の**graphtutorial**フォルダーに、新しい**cocoa タッチクラス**ファイルを作成します。 Field**のサブクラス**で [ **uiviewcontroller** ] を選択します。
-1. **Spinnerviewcontroller**を開き、宣言内に`@interface`次のコードを追加します。
+1. **GraphTu touchl** **フォルダーに新** しい Cocoa Touch Class ファイルを作成します `SpinnerViewController` 。 フィールド **のサブクラスで UIViewController** **を選択** します。
+1. **SpinnerViewController.h** を開き、宣言内に次のコードを追加 `@interface` します。
 
     ```objc
     - (void) startWithContainer:(UIViewController*) container;
     - (void) stop;
     ```
 
-1. **Spinnerviewcontroller**を開き、その内容を次のコードで置き換えます。
+1. **SpinnerViewController.m を** 開き、内容を次のコードに置き換えます。
 
     :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/SpinnerViewController.m" id="SpinnerViewSnippet":::
 
 ## <a name="test-the-app"></a>アプリのテスト
 
-変更を保存し、アプリを起動します。 [**サインイン**] ボタンと [**サインアウト**] ボタン、およびタブバーを使用して、画面間を移動できるようにする必要があります。
+変更内容を保存し、アプリを起動します。 [サインイン] ボタンと [サインアウト]ボタンとタブ バーを使用して、画面間を移動できる必要があります。
 
 ![アプリケーションのスクリーンショット](./images/app-screens.png)

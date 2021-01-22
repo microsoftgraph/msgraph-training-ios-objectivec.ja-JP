@@ -1,38 +1,59 @@
 <!-- markdownlint-disable MD002 MD041 -->
 
-この演習では、Microsoft Graph をアプリケーションに組み込みます。 このアプリケーションでは、microsoft graph [SDK for Use C](https://github.com/microsoftgraph/msgraph-sdk-objc)を使用して microsoft graph を呼び出すことにします。
+この演習では、Microsoft Graph をアプリケーションに組み込む必要があります。 このアプリケーションでは [、Microsoft Graph SDK for Objective C](https://github.com/microsoftgraph/msgraph-sdk-objc) を使用して Microsoft Graph を呼び出します。
 
 ## <a name="get-calendar-events-from-outlook"></a>Outlook からカレンダー イベントを取得する
 
-このセクションでは、 `GraphManager`クラスを拡張して、ユーザーのイベントを取得する関数を追加`CalendarViewController`し、これらの新しい関数を使用するように更新します。
+このセクションでは、クラスを拡張して、現在の週のユーザーのイベントを取得する関数を追加し、この新しい関数を使用 `GraphManager` `CalendarViewController` する更新を行います。
 
-1. **Graphmanager**を開き、宣言の`@interface`上に次のコードを追加します。
+1. **GraphManager.h を開** き、次のコードを宣言の上に追加 `@interface` します。
 
     ```objc
-    typedef void (^GetEventsCompletionBlock)(NSData* _Nullable data, NSError* _Nullable error);
+    typedef void (^GetCalendarViewCompletionBlock)(NSData* _Nullable data,
+                                                   NSError* _Nullable error);
     ```
 
-1. 次のコードを`@interface`宣言に追加します。
+1. 次のコードを宣言に追加 `@interface` します。
 
     ```objc
-    - (void) getEventsWithCompletionBlock: (GetEventsCompletionBlock)completionBlock;
+    - (void) getCalendarViewStartingAt: (NSString*) viewStart
+                              endingAt: (NSString*) viewEnd
+                   withCompletionBlock: (GetCalendarViewCompletionBlock) completion;
     ```
 
-1. **Graphmanager. m**を開き、次の関数を`GraphManager`クラスに追加します。
+1. **GraphManager.m を** 開き、次の関数をクラスに追加 `GraphManager` します。
 
     ```objc
-    - (void) getEventsWithCompletionBlock:(GetEventsCompletionBlock)completionBlock {
-        // GET /me/events?$select='subject,organizer,start,end'$orderby=createdDateTime DESC
+    - (void) getCalendarViewStartingAt: (NSString *) viewStart
+                              endingAt: (NSString *) viewEnd
+                   withCompletionBlock: (GetCalendarViewCompletionBlock) completion {
+        // Set calendar view start and end parameters
+        NSString* viewStartEndString =
+        [NSString stringWithFormat:@"startDateTime=%@&endDateTime=%@",
+         viewStart,
+         viewEnd];
+
+        // GET /me/calendarview
         NSString* eventsUrlString =
-        [NSString stringWithFormat:@"%@/me/events?%@&%@",
+        [NSString stringWithFormat:@"%@/me/calendarview?%@&%@&%@&%@",
          MSGraphBaseURL,
+         viewStartEndString,
          // Only return these fields in results
          @"$select=subject,organizer,start,end",
-         // Sort results by when they were created, newest first
-         @"$orderby=createdDateTime+DESC"];
+         // Sort results by start time
+         @"$orderby=start/dateTime",
+         // Request at most 25 results
+         @"$top=25"];
 
         NSURL* eventsUrl = [[NSURL alloc] initWithString:eventsUrlString];
         NSMutableURLRequest* eventsRequest = [[NSMutableURLRequest alloc] initWithURL:eventsUrl];
+
+        // Add the Prefer: outlook.timezone header to get start and end times
+        // in user's time zone
+        NSString* preferHeader =
+        [NSString stringWithFormat:@"outlook.timezone=\"%@\"",
+         self.graphTimeZone];
+        [eventsRequest addValue:preferHeader forHTTPHeaderField:@"Prefer"];
 
         MSURLSessionDataTask* eventsDataTask =
         [[MSURLSessionDataTask alloc]
@@ -40,12 +61,12 @@
          client:self.graphClient
          completion:^(NSData *data, NSURLResponse *response, NSError *error) {
              if (error) {
-                 completionBlock(nil, error);
+                 completion(nil, error);
                  return;
              }
 
              // TEMPORARY
-             completionBlock(data, nil);
+             completion(data, nil);
          }];
 
         // Execute the request
@@ -54,18 +75,33 @@
     ```
 
     > [!NOTE]
-    > のコードに`getEventsWithCompletionBlock`ついて検討します。
+    > コードの実行を `getCalendarViewStartingAt` 検討します。
     >
-    > - 呼び出される URL は `/v1.0/me/events` です。
-    > - Query `select`パラメーターは、各イベントに対して返されるフィールドを、アプリが実際に使用するものだけに制限します。
-    > - クエリ`orderby`パラメーターは、生成された日付と時刻で結果を並べ替えます。最新のアイテムが最初に表示されます。
+    > - 呼び出される URL は `/v1.0/me/calendarview` です。
+    >   - The `startDateTime` and query parameters define the start and end of the calendar `endDateTime` view.
+    >   - クエリ パラメーターは、各イベントで返されるフィールドを、ビューが実際に使用 `select` するフィールドに限定します。
+    >   - クエリ `orderby` パラメーターは、開始時刻で結果を並べ替える。
+    >   - クエリ `top` パラメーターは、1 ページあたり 25 の結果を要求します。
+    >   - このヘッダーにより、Microsoft Graph はユーザーのタイム ゾーン内の各イベントの開始時刻と終了 `Prefer: outlook.timezone` 時刻を返します。
 
-1. **Calendarviewcontroller**を開き、その内容全体を次のコードで置き換えます。
+1. GraphToIana **という名前の** **GraphTu touchl** プロジェクトに新しい Cocoa Touch クラス **を作成します**。 フィールド **のサブクラスで NSObject** **を選択** します。
+1. **GraphToIana.h を開き**、その内容を次のコードに置き換えます。
+
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/GraphToIana.h" id="GraphToIanaSnippet":::
+
+1. **GraphToIana.m を** 開き、その内容を次のコードに置き換えます。
+
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/GraphToIana.m" id="GraphToIanaSnippet":::
+
+    これにより、Microsoft Graph によって返されるタイム ゾーン名に基づいて IANA タイム ゾーン識別子を検索する簡単な検索が実行されます。
+
+1. **CalendarViewController.m を** 開き、内容全体を次のコードに置き換えます。
 
     ```objc
     #import "CalendarViewController.h"
     #import "SpinnerViewController.h"
     #import "GraphManager.h"
+    #import "GraphToIana.h"
     #import <MSGraphClientModels/MSGraphClientModels.h>
 
     @interface CalendarViewController ()
@@ -83,8 +119,36 @@
         self.spinner = [SpinnerViewController alloc];
         [self.spinner startWithContainer:self];
 
+        // Calculate the start and end of the current week
+        NSString* timeZoneId = [GraphToIana
+                                getIanaIdentifierFromGraphIdentifier:
+                                [GraphManager.instance graphTimeZone]];
+
+        NSDate* now = [NSDate date];
+        NSCalendar* calendar = [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
+        NSTimeZone* timeZone = [NSTimeZone timeZoneWithName:timeZoneId];
+        [calendar setTimeZone:timeZone];
+
+        NSDateComponents* startOfWeekComponents = [calendar
+                                                   components:NSCalendarUnitCalendar |
+                                                   NSCalendarUnitYearForWeekOfYear |
+                                                   NSCalendarUnitWeekOfYear
+                                                   fromDate:now];
+        NSDate* startOfWeek = [startOfWeekComponents date];
+        NSDate* endOfWeek = [calendar dateByAddingUnit:NSCalendarUnitDay
+                                                 value:7
+                                                toDate:startOfWeek
+                                               options:0];
+
+        // Convert start and end to ISO 8601 strings
+        NSISO8601DateFormatter* isoFormatter = [[NSISO8601DateFormatter alloc] init];
+        NSString* viewStart = [isoFormatter stringFromDate:startOfWeek];
+        NSString* viewEnd = [isoFormatter stringFromDate:endOfWeek];
+
         [GraphManager.instance
-         getEventsWithCompletionBlock:^(NSData * _Nullable data, NSError * _Nullable error) {
+         getCalendarViewStartingAt:viewStart
+         endingAt:viewEnd
+         withCompletionBlock:^(NSData * _Nullable data, NSError * _Nullable error) {
              dispatch_async(dispatch_get_main_queue(), ^{
                  [self.spinner stop];
 
@@ -115,77 +179,103 @@
     @end
     ```
 
-1. アプリを実行し、サインインして、メニューの [**予定表**] ナビゲーション項目をタップします。 アプリ内のイベントの JSON ダンプが表示されます。
+1. アプリを実行し、サインインして、メニューの **[予定表** ] ナビゲーション 項目をタップします。 アプリにイベントの JSON ダンプが表示されます。
 
 ## <a name="display-the-results"></a>結果の表示
 
-これで、JSON ダンプを、ユーザーにわかりやすい方法で結果を表示するためのものに置き換えることができます。 このセクションでは、厳密に型`getEventsWithCompletionBlock`指定されたオブジェクトを返すように関数`CalendarViewController`を変更し、テーブルビューを使用してイベントをレンダリングするように変更します。
+これで、JSON ダンプを何かに置き換え、結果をユーザー に分け親しみのある方法で表示できます。 このセクションでは、関数を変更して、型指定されたオブジェクトを返し、テーブル ビューを使用してイベントを `getCalendarViewStartingAt` `CalendarViewController` レンダリングする変更を行います。
 
-### <a name="update-getevents"></a>GetEvents の更新
+### <a name="update-getcalendarviewstartingat"></a>getCalendarViewStartingAt の更新
 
-1. **Graphmanager を**開きます。 `GetEventsCompletionBlock`型定義を次のように変更します。
+1. **GraphManager.h を開きます**。 型定義 `GetCalendarViewCompletionBlock` を次に変更します。
 
     ```objc
-    typedef void (^GetEventsCompletionBlock)(NSArray<MSGraphEvent*>* _Nullable events, NSError* _Nullable error);
+    typedef void (^GetCalendarViewCompletionBlock)(NSArray<MSGraphEvent*>* _Nullable events, NSError* _Nullable error);
     ```
 
-1. **Graphmanager. m**を開きます。 `getEventsWithCompletionBlock`関数の`completionBlock(data, nil);`行を次のコードに置き換えます。
+1. **GraphManager.m を開きます**。 既存の `getCalendarViewStartingAt` 関数を、以下のコードで置換します。
 
-    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/GraphManager.m" id="GetEventsSnippet" highlight="24-43":::
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/GraphManager.m" id="GetCalendarViewSnippet" highlight="42-61":::
 
 ### <a name="update-calendarviewcontroller"></a>CalendarViewController の更新
 
-1. という名前`CalendarTableViewCell`の**graphtutorial**プロジェクトに、新しい**cocoa タッチクラス**ファイルを作成します。 Field**のサブクラス**で [ **Uitableviewcell セル**を選択します。
-1. **Calendartableviewcell .h**を開き、その内容を次のコードで置き換えます。
+1. **GraphTu touchl** **プロジェクトに新** しい Cocoa Touch Class ファイルを作成します `CalendarTableViewCell` 。 フィールド **のサブクラスで UITableViewCell** **を選択** します。
+1. **CalendarTableViewCell.h を開き**、その内容を次のコードに置き換えます。
 
     :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarTableViewCell.h" id="CalendarTableCellSnippet":::
 
-1. **Calendartableviewcell**を開き、その内容を次のコードで置き換えます。
+1. **CalendarTableViewCell.m を** 開き、内容を次のコードに置き換えます。
 
     :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarTableViewCell.m" id="CalendarTableCellSnippet":::
 
-1. **メインのストーリーボード**を開いて、**予定表のシーン**を探します。 **予定表のシーン**で**ビュー**を選択し、削除します。
+1. **GraphTu touchl** **プロジェクトに新** しい Cocoa Touch Class ファイルを作成します `CalendarTableViewController` 。 フィールド **のサブクラスで UITableViewController** **を選択** します。
+1. **CalendarTableViewController.h** を開き、内容を次のコードに置き換えます。
 
-    ![予定表シーンのビューのスクリーンショット](./images/view-in-calendar-scene.png)
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarTableViewController.h" id="CalendarTableViewControllerSnippet":::
 
-1. **ライブラリ**から予定表の**シーン**に**テーブルビュー**を追加します。
-1. テーブルビューを選択し、[**属性インスペクター**] を選択します。 **プロトタイプセル**を**1**に設定します。
-1. **ライブラリ**を使用して、[プロトタイプ] セルに3つの**ラベル**を追加します。
-1. [プロトタイプ] セルを選択し、[ **Identity Inspector**] を選択します。 **クラス**を**Calendartableviewcell**に変更します。
-1. [ **Attributes インスペクター** ] を選択し、 `EventCell`**識別子**をに設定します。
-1. [ **Eventcell セル**を選択した状態で、[ `durationLabel`**接続インスペクター** ] `subjectLabel` 、[接続] `organizerLabel`、[] の順に選択し、ストーリーボードのセルに追加したラベルに接続します。
-1. 3つのラベルのプロパティと制約を次のように設定します。
+1. **CalendarTableViewController.m を** 開き、内容を次のコードに置き換えます。
+
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarTableViewController.m" id="CalendarTableViewControllerSnippet":::
+
+1. **Main.storyboard を開** き、予定表シーン **を見つける**。 ルート ビューからスクロール ビューを削除します。
+1. ライブラリを **使用** して、ビュー **の上部** にナビゲーション バーを追加します。
+1. ナビゲーション バーでタイトル **を** ダブルクリックし、次の値に更新します `Calendar` 。
+1. ライブラリを **使用** して、ナビゲーション バー **の** 右側にバー ボタン項目を追加します。
+1. 新しいバー ボタンを選択し、属性インスペクター **を選択します**。 イメージ **をプラスに****変更します**。
+1. ライブラリから **ナビゲーション バー** の **下の** ビューにコンテナー ビューを追加します。 コンテナー ビューのサイズを変更して、ビュー内の残りのすべての領域を取得します。
+1. ナビゲーション バーとコンテナー ビューの制約を次のように設定します。
+
+    - **ナビゲーション バー**
+        - 制約の追加: 高さ、値: 44
+        - 制約の追加: 安全領域への先頭のスペース、値: 0
+        - 制約を追加する: 安全領域への末尾のスペース、値: 0
+        - 制約を追加する: 安全な領域に上のスペース、値: 0
+    - **コンテナー ビュー**
+        - 制約の追加: 安全領域への先頭のスペース、値: 0
+        - 制約を追加する: 安全領域への末尾のスペース、値: 0
+        - 制約の追加: ナビゲーション バーの下に上のスペース、値: 0
+        - 制約の追加: セーフ エリアへの下部スペース、値: 0
+
+1. コンテナー ビューを追加するときにストーリーボードに追加された 2 番目のビュー コントローラーを見つける。 埋め込みセグ **によってカレンダー** シーンに接続されます。 このコントローラーを選択し **、Id インスペクターを使用** して **Class** を **CalendarTableViewController に変更します**。
+1. カレンダー テーブル **ビュー** コントローラーから **ビューを削除します**。
+1. ライブラリから **予定表テーブル ビュー** **コントローラーに** テーブル **ビューを追加します**。
+1. テーブル ビューを選択し、属性インスペクター **を選択します**。 プロトタイプ セル **を** **1 に設定します**。
+1. プロトタイプ セルの下端をドラッグして、操作する領域を広くします。
+1. ライブラリを **使用して** 、プロトタイプ セルに **3 つのラベル** を追加します。
+1. プロトタイプ セルを選択し、Identity Inspector を **選択します**。 クラス **を** **CalendarTableViewCell に変更します**。
+1. 属性インスペクタ **ーを選択し、[** 識別子 **] を次に設定** します `EventCell` 。
+1. **EventCell を** 選択した後 **、Connections Inspector** を選択して接続し、ストーリーボードのセルに追加したラベル `durationLabel` `organizerLabel` `subjectLabel` に接続します。
+1. 次のように、3 つのラベルのプロパティと制約を設定します。
 
     - **件名ラベル**
-        - 制約の追加: 先頭の領域をコンテンツビューの先頭余白、値: 0 にします。
-        - 制約の追加: 末尾のスペースをコンテンツビューの末尾の余白、値: 0 にします。
-        - 制約の追加: 上スペースからコンテンツビューの上余白、値: 0
-    - **開催者のラベル**
-        - フォント: システム12.0
-        - 制約の追加: 先頭の領域をコンテンツビューの先頭余白、値: 0 にします。
-        - 制約の追加: 末尾のスペースをコンテンツビューの末尾の余白、値: 0 にします。
-        - 制約の追加: 上スペースを件名ラベルの下に、値: Standard にします。
-    - **期間のラベル**
-        - フォント: システム12.0
+        - 制約の追加: コンテンツ ビューの先頭に余白を付け、値 : 0
+        - 制約を追加する: コンテンツ ビューの末尾の余白に末尾のスペース、値: 0
+        - 制約の追加: コンテンツ ビューの上余白に上余白、値: 0
+    - **開催者ラベル**
+        - フォント: System 12.0
+        - 制約の追加: 高さ、値: 15
+        - 制約の追加: コンテンツ ビューの先頭に余白を付け、値 : 0
+        - 制約を追加する: コンテンツ ビューの末尾の余白に末尾のスペース、値: 0
+        - 制約の追加: 件名ラベルの下に上のスペース、値: Standard
+    - **期間ラベル**
+        - フォント: System 12.0
         - 色: 濃い灰色
-        - 制約の追加: 先頭の領域をコンテンツビューの先頭余白、値: 0 にします。
-        - 制約の追加: 末尾のスペースをコンテンツビューの末尾の余白、値: 0 にします。
-        - 制約の追加: 上のスペースから開催者ラベルの下、値: 標準
-        - 制約の追加: 下のスペースをコンテンツビューの下の余白、値: 8 に制限します。
+        - 制約の追加: 高さ、値: 15
+        - 制約の追加: コンテンツ ビューの先頭に余白を付け、値 : 0
+        - 制約を追加する: コンテンツ ビューの末尾の余白に末尾のスペース、値: 0
+        - 制約の追加: [開催者ラベルの下に上のスペース]、値 : [標準]
+        - 制約の追加: コンテンツ ビューの下余白に下のスペース、値: 0
 
-    ![プロトタイプセルのレイアウトのスクリーンショット](./images/prototype-cell-layout.png)
+1. **EventCell を選択し**、サイズ検査を **選択します**。 行 **の高さに** 対 **して自動を有効にする**。
 
-1. **Calendarviewcontroller**を開き、プロパティを`calendarJSON`削除します。
-1. `@interface`宣言を次のように変更します。
+    ![予定表と予定表のテーブル ビュー コントローラーのスクリーンショット](images/calendar-table-storyboard.png)
 
-    ```objc
-    @interface CalendarViewController : UITableViewController
-    ```
+1. **CalendarViewController.h を開き**、プロパティを削除 `calendarJSON` します。
 
-1. **Calendarviewcontroller**を開き、その内容を次のコードで置き換えます。
+1. **CalendarViewController.m を** 開き、内容を次のコードに置き換えます。
 
-    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarViewController.m" id="CalendarViewSnippet":::
+    :::code language="objc" source="../demo/GraphTutorial/GraphTutorial/CalendarViewController.m" id="CalendarViewControllerSnippet":::
 
-1. アプリを実行し、サインインして [**予定表**] タブをタップします。イベントの一覧が表示されます。
+1. アプリを実行し、サインインして、[予定表] タブ **をタップ** します。イベントの一覧が表示されます。
 
     ![イベント表のスクリーンショット](./images/calendar-list.png)
